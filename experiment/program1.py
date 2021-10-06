@@ -20,7 +20,6 @@ parser.add_argument('--max_training_episodes', default=30000, type=int)
 parser.add_argument('--update_timestep', default=4000, type=int)
 parser.add_argument('--layer_num', default=4, type=int)
 parser.add_argument('--channel_num', default=64, type=int)
-parser.add_argument('--ppo_type', default='normal', type=str)
 parser.add_argument('--use_bn', default=True, type=bool)
 parser.add_argument('--lr', default=0.0003, type=float)
 parser.add_argument('--K_epochs', default=30, type=int)
@@ -35,7 +34,6 @@ max_training_episodes = args.max_training_episodes
 update_timestep = args.update_timestep
 layer_num = args.layer_num
 channel_num = args.channel_num
-ppo_type = args.ppo_type
 use_bn = args.use_bn
 lr = args.lr
 K_epochs = args.K_epochs
@@ -63,9 +61,10 @@ score_history_normal = []
 score_history_afterstate = []
 
 for i in range(2):
-    if i == 1:
-        ppo_type = "afterstate"
-    ppo_agent = PPO(layer_num, channel_num, ppo_type, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
+    if i == 0:
+        ppo_agent = NormalPPO(layer_num, channel_num, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
+    else:
+        ppo_agent = AfterstatePPO(layer_num, channel_num, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
 
     time_step = 0
     i_episode = 0
