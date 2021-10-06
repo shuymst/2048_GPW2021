@@ -19,6 +19,10 @@ class PPO:
         else:
             self.model = AfterstateActorCritic(layer_num, channel_num, use_bn).to(device)
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr = lr, momentum=0.9, weight_decay=1e-4)
+        if ppo_type == "normal":
+            self.model_old = NormalActorCritic(layer_num, channel_num, use_bn).to(device)
+        else:
+            self.model_old = AfterstateActorCritic(layer_num, channel_num, use_bn).to(device)
         self.model_old.load_state_dict(self.model.state_dict())
         self.model_old.eval()
         self.model.train()
