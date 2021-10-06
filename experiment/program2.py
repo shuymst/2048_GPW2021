@@ -52,8 +52,8 @@ torch.cuda.manual_seed(seed)
 env = gym.make("2048-v0")
 
 program_dir = "program2"
-figure_dir = "figure"
-model_dir = "model_params"
+figure_dir = "program2/figure"
+model_dir = "program2/model_params"
 
 if not os.path.exists(program_dir):
     os.makedirs(program_dir)
@@ -103,9 +103,9 @@ for i in range(2):
             update_count = 0
             update_game_count = 0
     if i == 0:
-        torch.save(ppo_agent.model.state_dict(), "./model_params/normal_reward.pth")
+        torch.save(ppo_agent.model.state_dict(), "./program2/model_params/normal_reward.pth")
     else:
-        torch.save(ppo_agent.model.state_dict(), "./model_params/step_reward.pth")
+        torch.save(ppo_agent.model.state_dict(), "./program2/model_params/step_reward.pth")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
