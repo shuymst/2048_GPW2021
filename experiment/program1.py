@@ -94,7 +94,7 @@ for i in range(2):
                 print(f"episode {i_episode}: {score}")
                 break 
         if update_count >= update_timestep and update_game_count >= 10:
-            ppo_agent.update(i_episode)
+            ppo_agent.update()
             update_count = 0
             update_game_count = 0
     if i == 0:
