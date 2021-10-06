@@ -51,18 +51,23 @@ torch.cuda.manual_seed(seed)
 
 env = gym.make("2048-v0")
 
+program_dir = "program2"
 figure_dir = "figure"
 model_dir = "model_params"
 
+if not os.path.exists(program_dir):
+    os.makedirs(program_dir)
 if not os.path.exists(figure_dir):
     os.makedirs(figure_dir)
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
-score_history_normal = []
-score_history_afterstate = []
+score_history_normal_reward = []
+score_history_step_reward = []
 
 for i in range(2):
+    #i == 0 reward:score
+    #i == 1 reward:step 
     ppo_agent = AfterstatePPO(layer_num, channel_num, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
 
     time_step = 0
@@ -77,18 +82,20 @@ for i in range(2):
         while True:
             action = ppo_agent.select_action(state)
             state, reward, done, _ = env.step(action)
+            score += reward
+            if i == 1:
+                reward = 1.0
             ppo_agent.buffer.rewards.append(reward)
             ppo_agent.buffer.is_terminals.append(done)
             in_episode_time += 1
             time_step += 1
             update_count += 1
-            score += reward
             if done:
                 update_game_count += 1
                 if i == 0:
-                    score_history_normal.append(score)
+                    score_history_normal_reward.append(score)
                 else:
-                    score_history_afterstate.append(score)
+                    score_history_step_reward.append(score)
                 print(f"episode {i_episode}: {score}")
                 break 
         if update_count >= update_timestep and update_game_count >= 10:
@@ -96,20 +103,20 @@ for i in range(2):
             update_count = 0
             update_game_count = 0
     if i == 0:
-        torch.save(ppo_agent.model.state_dict(), "./model_params/normal_ppo.pth")
+        torch.save(ppo_agent.model.state_dict(), "./model_params/normal_reward.pth")
     else:
-        torch.save(ppo_agent.model.state_dict(), "./model_params/afterstate_ppo.pth")
+        torch.save(ppo_agent.model.state_dict(), "./model_params/step_reward.pth")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
-ax.set_title("Normal PPO vs Afterstate PPO")
-score_history_normal = np.array(score_history_normal)
-score_history_afterstate = np.array(score_history_afterstate)
+ax.set_title("normal reward vs step reward")
+score_history_normal_reward = np.array(score_history_normal_reward)
+score_history_step_reward = np.array(score_history_step_reward)
 num = 5
 b = np.ones(num) / num
-moving_average_normal = np.convolve(score_history_normal, b, mode="same")
-moving_average_afterstate = np.convolve(score_history_afterstate, b, mode="same")
-ax.plot(range(1, max_training_episodes+1), moving_average_normal)
-ax.plot(range(1, max_training_episodes+1), moving_average_afterstate)
-ax.legend(["Normal PPO", "Afterstate PPO"])
-plt.savefig(os.path.join(figure_dir, 'compare_normal_and_afterstate.png'))
+moving_average_normal_reward = np.convolve(score_history_normal_reward, b, mode="same")
+moving_average_step_reward = np.convolve(score_history_step_reward, b, mode="same")
+ax.plot(range(1, max_training_episodes+1), moving_average_normal_reward)
+ax.plot(range(1, max_training_episodes+1), moving_average_step_reward)
+ax.legend(["normal reward", "step reward"])
+plt.savefig(os.path.join(figure_dir, 'compare_normal_reward_and_step_reward.png'))
