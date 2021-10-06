@@ -9,7 +9,7 @@ sys.path.append("../agent")
 import gym_2048
 import ppo
 import utils
-from ppo import PPO
+from ppo import AfterstatePPO, NormalPPO
 import matplotlib.pyplot as plt
 
 device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
