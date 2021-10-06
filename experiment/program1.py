@@ -97,9 +97,9 @@ for i in range(2):
             update_count = 0
             update_game_count = 0
     if i == 0:
-        torch.save(ppo_agent.model.state_dict(), "./model_param/normal_ppo.pth")
+        torch.save(ppo_agent.model.state_dict(), "./model_params/normal_ppo.pth")
     else:
-        torch.save(ppo_agent.model.state_dict(), "./model_param/afterstate_ppo.pth")
+        torch.save(ppo_agent.model.state_dict(), "./model_params/afterstate_ppo.pth")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
