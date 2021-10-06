@@ -4,6 +4,8 @@ from torch.distributions.categorical import Categorical
 import torch.nn as nn
 from utils import *
 
+device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
+
 class PPO:
     def __init__(self, layer_num, channel_num, ppo_type, use_bn, lr, gamma, lambd, K_epochs, eps_clip):
         self.gamma = gamma
@@ -13,7 +15,7 @@ class PPO:
         self.buffer = RolloutBuffer()
         self.ppo_type = ppo_type
         if ppo_type == "normal":
-            self.model = NormalActorCritic(layer_num, channel_num, use_bn)
+            self.model = NormalActorCritic(layer_num, channel_num, use_bn).to(device)
         else:
             self.model = AfterstateActorCritic(layer_num, channel_num, use_bn).to(device)
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr = lr, momentum=0.9, weight_decay=1e-4)
