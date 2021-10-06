@@ -1,4 +1,4 @@
-#You can compare the ability of normal-ppo and afterstate-ppo by running this program.
+#You can compare the influence of type of reward
 
 import numpy as np
 import gym
@@ -11,7 +11,7 @@ sys.path.append("../agent")
 import gym_2048
 import ppo
 import utils
-from ppo import AfterstatePPO, NormalPPO
+from ppo import AfterstatePPO
 import matplotlib.pyplot as plt
 
 device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
@@ -51,12 +51,9 @@ torch.cuda.manual_seed(seed)
 
 env = gym.make("2048-v0")
 
-program_dir = "program1"
-figure_dir = "program1/figure"
-model_dir = "program1/model_params"
+figure_dir = "figure"
+model_dir = "model_params"
 
-if not os.path.exists(program_dir):
-    os.makedirs(program_dir)
 if not os.path.exists(figure_dir):
     os.makedirs(figure_dir)
 if not os.path.exists(model_dir):
@@ -66,10 +63,7 @@ score_history_normal = []
 score_history_afterstate = []
 
 for i in range(2):
-    if i == 0:
-        ppo_agent = NormalPPO(layer_num, channel_num, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
-    else:
-        ppo_agent = AfterstatePPO(layer_num, channel_num, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
+    ppo_agent = AfterstatePPO(layer_num, channel_num, use_bn, lr, gamma, lambd, K_epochs, eps_clip)
 
     time_step = 0
     i_episode = 0
@@ -102,9 +96,9 @@ for i in range(2):
             update_count = 0
             update_game_count = 0
     if i == 0:
-        torch.save(ppo_agent.model.state_dict(), "./program1/model_params/normal_ppo.pth")
+        torch.save(ppo_agent.model.state_dict(), "./model_params/normal_ppo.pth")
     else:
-        torch.save(ppo_agent.model.state_dict(), "./program1/model_params/afterstate_ppo.pth")
+        torch.save(ppo_agent.model.state_dict(), "./model_params/afterstate_ppo.pth")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
