@@ -39,7 +39,7 @@ class AfterstatePPO:
         old_actions = torch.tensor(self.buffer.actions).detach().to(device)
         old_logprobs = torch.squeeze(torch.stack(self.buffer.logprobs), dim=0).detach().to(device)
         for _ in range(self.K_epochs):
-            logprobs, state_values = self.model.evaluate(old_states, old_actions, old_afterstates, old_afterstate_rewards)
+            logprobs, state_values, entropy = self.model.evaluate(old_states, old_actions, old_afterstates, old_afterstate_rewards)
             state_values = torch.squeeze(state_values)
             next_state_values = state_values.clone().detach()
             next_state_values = next_state_values[1:]
