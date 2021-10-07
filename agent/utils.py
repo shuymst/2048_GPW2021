@@ -161,16 +161,6 @@ def down(state):
         double_table[double[0]][double[1]] = 1
     return table_tmp, reward, flag, double_table
 
-class ReplayMemory(object):
-    def __init__(self, capacity):
-        self.memory = deque([], maxlen=capacity)
-    def push(self, *args):
-        self.memory.append(Transition(*args))
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
-    def __len__(self):
-        return len(self.memory)
-
 class NormalActorCritic(nn.Module):
     def __init__(self, layer_num, channel_num, use_bn):
         super(NormalActorCritic, self).__init__()
@@ -259,12 +249,12 @@ class AfterstateActorCritic(nn.Module):
         self.use_bn = use_bn
         self.convs = nn.ModuleList([])
         self.bns = nn.ModuleList([])
-        self.actor_last_conv = nn.Conv2d(channel_num, 1, kernel_size=4, stride=1, padding=0)
-        self.critic_last_conv = nn.Conv2d(channel_num, 1, kernel_size=4, stride=1, padding=0)
-        self.convs.append(nn.Conv2d(17, channel_num, kernel_size=3, padding=1))
+        self.actor_last_conv = nn.Conv2d(channel_num, 1, kernel_size=4, stride=1, padding=0, bias=False)
+        self.critic_last_conv = nn.Conv2d(channel_num, 1, kernel_size=4, stride=1, padding=0, bias=False)
+        self.convs.append(nn.Conv2d(17, channel_num, kernel_size=3, padding=1, bias=False))
         self.bns.append(nn.BatchNorm2d(channel_num))
         for _ in range(layer_num-1):
-            self.convs.append(nn.Conv2d(channel_num, channel_num, kernel_size=3, padding=1))
+            self.convs.append(nn.Conv2d(channel_num, channel_num, kernel_size=3, padding=1, bias=False))
             self.bns.append(nn.BatchNorm2d(channel_num))
     
     def actor(self, x):
@@ -343,6 +333,59 @@ class AfterstateActorCritic(nn.Module):
         afterstate_critic_values = afterstate_critic_values.view(-1, 4)
         state_values = (action_probs.detach() * afterstate_critic_values).sum(1) #actorの出力する確率で重み付き平均を計算する
         return action_logprobs, state_values, entropy
+
+class ValueNet(nn.Module):
+    def __init__(self):
+        super(ValueNet, self).__init__()
+        self.model = nn.Sequential(
+            nn.Conv2d(17, 256, kernel_size=2, padding=0),
+            nn.ReLU(),
+            nn.Conv2d(256, 512, kernel_size=2, padding=0),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(2048, 1024),
+            nn.ReLU(),
+            nn.Linear(1024, 256),
+            nn.ReLU(),
+            nn.Linear(256, 1)
+        )
+    def forward(self, x):
+        raise NotImplementedError
+    def act(self, state):
+        rand = np.random.random()
+        if rand < 0.1:
+            action = np.random.choice([0,1,2,3])
+        else:
+            actions = [up, right, down, left]
+            afterstate_tensors = []
+            rewards = []
+            illegal_actions = []
+            for a in range(4):
+                afterstate, reward, flag, double_table = actions[a](state)
+                afterstate_tensors.append(to_3d(afterstate))
+                rewards.append(reward)
+                if not flag:
+                    illegal_actions.append(a)
+            afterstate_tensors = torch.stack(afterstate_tensors).to(device)
+            rewards = torch.tensor(rewards).to(device)
+            afterstate_values = self.model(afterstate_tensors).squeeze() + rewards
+            for a in illegal_actions:
+                afterstate_values[a] = 0.
+            action =  torch.argmax(afterstate_values).item()
+        return action
+    def evaluate(self, batch_afterstates, batch_next_afterstates): #batch_afterstates, batch_next_afterstatesは通常の配列
+        batch_afterstates = torch.stack(batch_afterstates).to(device)
+        batch_afterstate_values = self.model(batch_afterstates).squeeze()
+        batch_next_afterstate_values = self.compute_next_state_values(batch_next_afterstates)
+        return batch_afterstate_values, batch_next_afterstate_values
+    
+    def compute_next_state_values(self, batch_next_afterstates):
+        batch_next_afterstates = batch_next_afterstates[1:]
+        non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, batch_next_afterstates))).to(device)
+        non_final_next_states = torch.stack([s for s in batch_next_afterstates if s is not None]).to(device)
+        next_state_values = torch.zeros(len(batch_next_afterstates)).to(device)
+        next_state_values[non_final_mask] = torch.squeeze(self.model(non_final_next_states)).to(device)
+        return next_state_values.detach()
 
 class RolloutBuffer:
     def __init__(self):
