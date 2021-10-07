@@ -367,8 +367,9 @@ class ValueNet(nn.Module):
                 if not flag:
                     illegal_actions.append(a)
             afterstate_tensors = torch.stack(afterstate_tensors).to(device)
-            rewards = torch.tensor(rewards).to(device)
-            afterstate_values = self.model(afterstate_tensors).squeeze() + rewards
+            #rewards = torch.tensor(rewards).to(device)
+            #afterstate_values = self.model(afterstate_tensors).squeeze() + rewards
+            afterstate_values = self.model(afterstate_tensors).squeeze()
             for a in illegal_actions:
                 afterstate_values[a] = 0.
             action =  torch.argmax(afterstate_values).item()
