@@ -54,6 +54,7 @@ env = gym.make("2048-v0")
 program_dir = "program1"
 figure_dir = "program1/figure"
 model_dir = "program1/model_params"
+score_dir = "program1/score"
 
 if not os.path.exists(program_dir):
     os.makedirs(program_dir)
@@ -61,6 +62,8 @@ if not os.path.exists(figure_dir):
     os.makedirs(figure_dir)
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
+if not os.path.exists(score_dir):
+    os.makedirs(score_dir)
 
 score_history_normal = []
 score_history_afterstate = []
@@ -111,6 +114,8 @@ ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
 ax.set_title("Normal PPO vs Afterstate PPO")
 score_history_normal = np.array(score_history_normal)
 score_history_afterstate = np.array(score_history_afterstate)
+np.save('program1/score/score_history_normal', score_history_normal)
+np.save('program1/score/score_history_afterstate', score_history_afterstate)
 num = 5
 b = np.ones(num) / num
 moving_average_normal = np.convolve(score_history_normal, b, mode="same")

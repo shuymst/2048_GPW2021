@@ -54,6 +54,7 @@ env = gym.make("2048-v0")
 program_dir = "program2"
 figure_dir = "program2/figure"
 model_dir = "program2/model_params"
+score_dir = "program2/score"
 
 if not os.path.exists(program_dir):
     os.makedirs(program_dir)
@@ -61,6 +62,8 @@ if not os.path.exists(figure_dir):
     os.makedirs(figure_dir)
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
+if not os.path.exists(score_dir):
+    os.makedirs(score_dir)
 
 score_history_normal_reward = []
 score_history_step_reward = []
@@ -112,6 +115,8 @@ ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
 ax.set_title("normal reward vs step reward")
 score_history_normal_reward = np.array(score_history_normal_reward)
 score_history_step_reward = np.array(score_history_step_reward)
+np.save('program2/score/score_history_normal_reward', score_history_normal_reward)
+np.save('program2/score/score_history_step_reward', score_history_step_reward)
 num = 5
 b = np.ones(num) / num
 moving_average_normal_reward = np.convolve(score_history_normal_reward, b, mode="same")
