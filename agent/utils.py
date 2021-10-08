@@ -299,8 +299,9 @@ class AfterstateActorCritic(nn.Module):
             afterstate, reward, flag, reward_table = actions[action](state)
             afterstate_tensor = to_3d(afterstate)
             afterstate_tensors.append(afterstate_tensor)
-            afterstates_buffer.append(afterstate_tensor)
-            rewards_buffer.append(reward)
+            if is_training:
+                afterstates_buffer.append(afterstate_tensor)
+                rewards_buffer.append(reward)
             flags.append(flag)
         afterstate_tensors = torch.stack(afterstate_tensors).to(device)
         action_logits = self.actor(afterstate_tensors).squeeze()
