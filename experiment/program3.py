@@ -80,7 +80,7 @@ for i_episode in range(1, max_training_episodes+1):
         evaluate_scores = []
         for _ in range(10):
             state = env.reset()
-            score_ = 0
+            score = 0
             while True:
                 action = td_agent.select_action(state, is_training = False)
                 state, reward, done, _ = env.step(action)
