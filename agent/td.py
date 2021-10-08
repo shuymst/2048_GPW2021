@@ -16,8 +16,8 @@ class TDAgent:
         self.buffer_next_afterstates = []
         self.gamma = gamma
     
-    def select_action(self, state):
-        action = self.model.act(state)
+    def select_action(self, state, is_training=True):
+        action = self.model.act(state, is_training)
         return action
     
     def update(self):

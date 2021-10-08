@@ -21,13 +21,14 @@ class AfterstatePPO:
         self.model.train()
         self.MseLoss = nn.MSELoss()
     
-    def select_action(self, state):
+    def select_action(self, state, is_training = True):
         with torch.no_grad():
-            action, action_logprob = self.model_old.act(state, self.buffer.afterstates, self.buffer.afterstate_rewards)
-            state = to_3d(state)
-            self.buffer.states.append(state)
-            self.buffer.actions.append(action)
-            self.buffer.logprobs.append(action_logprob)
+            action, action_logprob = self.model_old.act(state, self.buffer.afterstates, self.buffer.afterstate_rewards, is_training)
+            if is_training:
+                state = to_3d(state)
+                self.buffer.states.append(state)
+                self.buffer.actions.append(action)
+                self.buffer.logprobs.append(action_logprob)
             return action
     
     def update(self):
@@ -83,13 +84,14 @@ class NormalPPO:
         self.model.train()
         self.MseLoss = nn.MSELoss()
     
-    def select_action(self, state):
+    def select_action(self, state, is_training = True):
         with torch.no_grad():
-            action, action_logprob = self.model_old.act(state)
-            state = to_3d(state)
-            self.buffer.states.append(state)
-            self.buffer.actions.append(action)
-            self.buffer.logprobs.append(action_logprob)
+            action, action_logprob = self.model_old.act(state, is_training)
+            if is_training:
+                state = to_3d(state)
+                self.buffer.states.append(state)
+                self.buffer.actions.append(action)
+                self.buffer.logprobs.append(action_logprob)
             return action
     
     def update(self):

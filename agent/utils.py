@@ -212,7 +212,7 @@ class NormalActorCritic(nn.Module):
     def forward(self):
         raise NotImplementedError
 
-    def act(self, state):
+    def act(self, state, is_training = True):
         actions = [up, right, down, left]
         flags = []
         legal_actions = []
@@ -228,7 +228,7 @@ class NormalActorCritic(nn.Module):
                 legal_logits.append(action_logits[a])
         legal_policy = F.softmax(torch.tensor(legal_logits), dim = -1)
         dist = Categorical(legal_policy)
-        action = dist.sample()
+        action = dist.sample() if is_training else torch.argmax(legal_logits)
         action_logprob = dist.log_prob(action)
         action = legal_actions[action]
         return action, action_logprob
@@ -291,7 +291,7 @@ class AfterstateActorCritic(nn.Module):
     def forward(self):
         raise NotImplementedError
 
-    def act(self, state, afterstates_buffer, rewards_buffer):
+    def act(self, state, afterstates_buffer, rewards_buffer, is_training = True):
         actions = [up, right, down, left]
         afterstate_tensors = []
         flags = []
@@ -312,7 +312,7 @@ class AfterstateActorCritic(nn.Module):
                 legal_logits.append(action_logits[a])
         legal_policy = F.softmax(torch.tensor(legal_logits), dim = -1)
         temp_dist = Categorical(legal_policy)
-        action = temp_dist.sample()
+        action = temp_dist.sample() if is_training else torch.argmax(legal_logits)
         action_logprob = temp_dist.log_prob(action)
         action = legal_actions[action]
         return action, action_logprob.detach()
@@ -351,9 +351,10 @@ class ValueNet(nn.Module):
         )
     def forward(self, x):
         raise NotImplementedError
-    def act(self, state):
+    def act(self, state, is_training = True):
         rand = np.random.random()
-        if rand < 0.1:
+        eps = 0.1 if is_training else 0
+        if rand < eps:
             action = np.random.choice([0,1,2,3])
         else:
             actions = [up, right, down, left]

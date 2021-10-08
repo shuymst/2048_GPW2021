@@ -66,7 +66,9 @@ if not os.path.exists(score_dir):
     os.makedirs(score_dir)
 
 score_history_normal_reward = []
+score_history_normal_reward_evaluate = []
 score_history_step_reward = []
+score_history_step_reward_evaluate = []
 
 for i in range(2):
     #i == 0 reward:score
@@ -105,6 +107,23 @@ for i in range(2):
             ppo_agent.update()
             update_count = 0
             update_game_count = 0
+        if i_episode % 100 == 0:
+            evaluate_scores = []
+            for _ in range(10):
+                state = env.reset()
+                score_ = 0
+                while True:
+                    action = ppo_agent.select_action(state, is_training = False)
+                    state, reward, done, _ = env.step(action)
+                    score += reward
+                    if done:
+                        break
+                evaluate_scores.append(score)
+            evaluate_scores = np.array(evaluate_scores)
+            if i == 0:
+                score_history_normal_reward_evaluate.append(evaluate_scores.mean())
+            else:
+                score_history_step_reward_evaluate.append(evaluate_scores.mean())
     if i == 0:
         torch.save(ppo_agent.model.state_dict(), "./program2/model_params/normal_reward.pth")
     else:
@@ -115,13 +134,21 @@ ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
 ax.set_title("normal reward vs step reward")
 score_history_normal_reward = np.array(score_history_normal_reward)
 score_history_step_reward = np.array(score_history_step_reward)
+score_history_normal_reward_evaluate = np.array(score_history_normal_reward_evaluate)
+score_history_step_reward_evaluate = np.array(score_history_step_reward_evaluate)
 np.save('program2/score/score_history_normal_reward', score_history_normal_reward)
 np.save('program2/score/score_history_step_reward', score_history_step_reward)
-num = 5
+np.save('program2/score/score_history_normal_reward_evaluate', score_history_normal_reward_evaluate)
+np.save('program2/score/score_history_step_reward_evaluate', score_history_step_reward_evaluate)
+num = 100
 b = np.ones(num) / num
 moving_average_normal_reward = np.convolve(score_history_normal_reward, b, mode="same")
 moving_average_step_reward = np.convolve(score_history_step_reward, b, mode="same")
-ax.plot(range(1, max_training_episodes+1), moving_average_normal_reward)
-ax.plot(range(1, max_training_episodes+1), moving_average_step_reward)
+#ax.plot(range(1, max_training_episodes+1), moving_average_normal_reward, color="blue")
+ax.plot(range(100, max_training_episodes+1, 100), score_history_normal_reward_evaluate, color="blue")
+ax.plot(range(1, max_training_episodes+1), score_history_normal_reward, color="blue", alpha=0.2)
+#ax.plot(range(1, max_training_episodes+1), moving_average_step_reward, color="red")
+ax.plot(range(100, max_training_episodes+1, 100), score_history_step_reward_evaluate, color="red")
+ax.plot(range(1, max_training_episodes+1), score_history_step_reward, color="red", alpha=0.2)
 ax.legend(["normal reward", "step reward"])
 plt.savefig(os.path.join(figure_dir, 'compare_normal_reward_and_step_reward.png'))

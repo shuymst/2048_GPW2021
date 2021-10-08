@@ -35,9 +35,8 @@ class Env_2048(gym.Env):
         return self.table
     
     def initial_place(self):
-        place = np.random.choice(range(16),size=2,replace=False)
-        self.table[place[0]//4, place[0]%4] = self.two_or_four()
-        self.table[place[1]//4, place[1]%4] = self.two_or_four()
+        self.add_number()
+        self.add_number()
 
     def two_or_four(self):
         return 2 if np.random.random() < 0.9 else 4
@@ -45,7 +44,7 @@ class Env_2048(gym.Env):
     def add_number(self):
         row, column = np.where(self.table==0)
         if row.size == 0:
-            return 
+            raise Exception("Error")
         n = np.random.choice(range(row.size))
         self.table[row[n]][column[n]] = self.two_or_four()
 
