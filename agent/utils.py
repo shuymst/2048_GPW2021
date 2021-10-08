@@ -228,7 +228,7 @@ class NormalActorCritic(nn.Module):
                 legal_logits.append(action_logits[a])
         legal_policy = F.softmax(torch.tensor(legal_logits), dim = -1)
         dist = Categorical(legal_policy)
-        action = dist.sample() if is_training else torch.argmax(legal_logits)
+        action = dist.sample() if is_training else torch.argmax(torch.tensor(legal_logits))
         action_logprob = dist.log_prob(action)
         action = legal_actions[action]
         return action, action_logprob
@@ -312,7 +312,7 @@ class AfterstateActorCritic(nn.Module):
                 legal_logits.append(action_logits[a])
         legal_policy = F.softmax(torch.tensor(legal_logits), dim = -1)
         temp_dist = Categorical(legal_policy)
-        action = temp_dist.sample() if is_training else torch.argmax(legal_logits)
+        action = temp_dist.sample() if is_training else torch.argmax(torch.tensor(legal_logits))
         action_logprob = temp_dist.log_prob(action)
         action = legal_actions[action]
         return action, action_logprob.detach()
