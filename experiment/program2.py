@@ -150,5 +150,5 @@ ax.plot(range(100, max_training_episodes+1, 100), score_history_step_reward_eval
 ax.plot(range(1, max_training_episodes+1), score_history_normal_reward, color="blue", alpha=0.2)
 #ax.plot(range(1, max_training_episodes+1), moving_average_step_reward, color="red")
 ax.plot(range(1, max_training_episodes+1), score_history_step_reward, color="red", alpha=0.2)
-ax.legend(["normal reward", "step reward"], labe)
+ax.legend(["normal reward", "step reward"])
 plt.savefig(os.path.join(figure_dir, 'compare_normal_reward_and_step_reward.png'))

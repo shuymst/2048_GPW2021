@@ -117,7 +117,7 @@ torch.save(ppo_agent.model.state_dict(), "./program4/model_params/ppo.pth")
 
 fig = plt.figure()
 ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
-ax.set_title("100000 episodes")
+ax.set_title("Afterstate PPO with step reward(100000 episodes)")
 score_history = np.array(score_history)
 score_history_evaluate = np.array(score_history_evaluate)
 np.save('program4/score/score_history', score_history)
