@@ -135,7 +135,8 @@ for i in range(2):
 
 fig = plt.figure()
 ax = fig.add_subplot(111, xlabel = "episode", ylabel='total rewards')
-ax.set_title("Normal PPO vs Afterstate PPO")
+reward_type = "score reward" if reward_is_score else "step reward"
+ax.set_title(f"Normal PPO vs Afterstate PPO ({reward_type})")
 score_history_normal = np.array(score_history_normal)
 score_history_afterstate = np.array(score_history_afterstate)
 score_history_normal_evaluate = np.array(score_history_normal_evaluate)
