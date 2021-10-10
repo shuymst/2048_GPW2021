@@ -22,6 +22,7 @@ device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
 parser = argparse.ArgumentParser()
 parser.add_argument('--max_training_episodes', default=30000, type=int)
 parser.add_argument('--update_timestep', default=4000, type=int)
+parser.add_argument('--reward_is_score', default=True, type=bool)
 parser.add_argument('--layer_num', default=4, type=int)
 parser.add_argument('--channel_num', default=64, type=int)
 parser.add_argument('--use_bn', default=True, type=bool)
@@ -36,6 +37,7 @@ args = parser.parse_args()
 
 max_training_episodes = args.max_training_episodes
 update_timestep = args.update_timestep
+reward_is_score = args.reward_is_score
 layer_num = args.layer_num
 channel_num = args.channel_num
 use_bn = args.use_bn
@@ -90,6 +92,8 @@ for i in range(2):
             action = ppo_agent.select_action(state)
             state, reward, done, _ = env.step(action)
             score += reward
+            if not reward_is_score:
+                reward = 1.0
             ppo_agent.buffer.rewards.append(reward)
             ppo_agent.buffer.is_terminals.append(done)
             time_step += 1
